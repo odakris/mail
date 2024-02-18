@@ -27,6 +27,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# Auto-created primary keys
+DEFAULT_AUTO_FIELD='django.db.models.AutoField'
+
 
 # Application definition
 
