@@ -19,6 +19,7 @@ document.addEventListener("DOMContentLoaded", function () {
 function compose_email() {
   // Show compose view and hide other views
   document.querySelector("#emails-view").style.display = "none";
+  document.querySelector("#display-email-view").style.display = "none";
   document.querySelector("#compose-view").style.display = "block";
 
   // Clear out composition fields
@@ -30,13 +31,14 @@ function compose_email() {
 function load_mailbox(mailbox) {
   // Show the mailbox and hide other views
   document.querySelector("#emails-view").style.display = "block";
+  document.querySelector("#display-email-view").style.display = "none";
   document.querySelector("#compose-view").style.display = "none";
 
   // Show the mailbox name
   document.querySelector("#emails-view").innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
 
   // Fetch 'mailbox' mails
-  fetch("/emails/" + mailbox)
+  fetch(`/emails/${mailbox}`)
     .then((response) => response.json())
     .then((emails) => {
       const emailsView = document.getElementById("emails-view");
@@ -54,17 +56,17 @@ function load_mailbox(mailbox) {
 
           if (email.recipients.length > 1) {
             // If more than one receiver
-            receiver.innerHTML = "To: " + email.recipients[0] + " and more..";
+            receiver.innerHTML = `To: ${email.recipients[0]} +${email.recipients.length - 1}`;
           } else {
             // If only one receiver
-            receiver.innerHTML = "To: " + email.recipients;
+            receiver.innerHTML = `To: ${email.recipients}`;
           }
 
           blockMail.append(receiver);
         } else {
           const sender = document.createElement("div");
           sender.classList.add("sender");
-          sender.innerHTML = "From: " + email.sender;
+          sender.innerHTML = `From: ${email.sender}`;
           blockMail.append(sender);
         }
 
@@ -80,10 +82,58 @@ function load_mailbox(mailbox) {
         time.innerHTML = email.timestamp;
         blockMail.append(time);
 
+        // Load email on click
+        blockMail.addEventListener("click", () => display_email(email.id));
+
         // Append new email
         emailsView.append(blockMail);
       });
     });
+}
+
+function display_email(id) {
+  // Show compose view and hide other views
+  document.querySelector("#emails-view").style.display = "none";
+  document.querySelector("#compose-view").style.display = "none";
+  document.querySelector("#display-email-view").style.display = "block";
+
+  fetch(`/emails/${id}`)
+    .then((response) => response.json())
+    .then((result) => {
+      console.log(result);
+      const displayEmail = document.querySelector("#display-email-view");
+
+      // Show the Mail Subject
+      displayEmail.innerHTML = `<h3>${result.subject}</h3>`;
+
+      // Show email details
+      const emailDetails = document.createElement("div");
+
+      // From
+      const emailFrom = document.createElement("div");
+      emailFrom.classList.add("email-from");
+      emailFrom.innerHTML = `From: ${result.sender}`;
+
+      // To
+      const emailTo = document.createElement("div");
+      emailTo.classList.add("email-to");
+      emailTo.innerHTML = `To: ${result.recipients}`;
+
+      // Time
+      const emailTime = document.createElement("div");
+      emailTime.classList.add("email-time");
+      emailTime.innerHTML = result.timestamp;
+
+      // Email body
+      const emailBody = document.createElement("div");
+      emailBody.classList.add("email-body");
+      emailBody.innerHTML = result.body;
+
+      emailDetails.append(emailFrom, emailTo, emailTime, emailBody);
+
+      displayEmail.append(emailDetails);
+    })
+    .catch((error) => console.log(error));
 }
 
 function send_email() {
