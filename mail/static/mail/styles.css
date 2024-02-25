@@ -11,6 +11,11 @@
     align-items: center;
 }
 
+.unread .sender,
+.unread .subject {
+    font-weight: 800;
+}
+
 textarea {
     min-height: 400px;
 }

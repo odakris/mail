@@ -48,6 +48,7 @@ function load_mailbox(mailbox) {
         const blockMail = document.createElement("div");
         blockMail.setAttribute("id", email.id);
         blockMail.classList.add("email", "flex");
+        !email.read ? blockMail.classList.add("unread") : "";
 
         // Define sender / receiver div
         if (mailbox == "sent") {
@@ -97,6 +98,15 @@ function display_email(id) {
   document.querySelector("#compose-view").style.display = "none";
   document.querySelector("#display-email-view").style.display = "block";
 
+  // Set read to True
+  fetch(`/emails/${id}`, {
+    method: "PUT",
+    body: JSON.stringify({
+      read: true,
+    }),
+  });
+
+  // Fetch email
   fetch(`/emails/${id}`)
     .then((response) => response.json())
     .then((result) => {
